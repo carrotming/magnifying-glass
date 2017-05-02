@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            border: 0;
+        }
+        body{
+            background: #000;
+        }
+
+    </style>
+</head>
+<body>
+
+<canvas id="canvas" style="border: 1px solid #AAAAAA; display: block;margin: 100px auto" ></canvas>
+
+<canvas id="offCanvas" style="display: none " ></canvas>
+
+
+</body>
+<script>
+
+    var canvas=document.getElementById('canvas');
+    var offCanvas=document.getElementById('offCanvas');
+    var cxt=canvas.getContext('2d');
+    var offContext=offCanvas.getContext('2d');
+
+    var flag=false;
+    var image=new Image();
+    var scale;
+window.onload=function (){
+    canvas.width=1366;
+    canvas.height=786;
+    image.src='300.jpg';
+    image.onload=function (){
+        offCanvas.width=image.width;
+        offCanvas.height=image.height;
+        scale=offCanvas.width/canvas.width;
+        cxt.drawImage(image,0,0,canvas.width,canvas.height);
+        offContext.drawImage(image,0,0)
+    }
+}
+
+    function canvasXY(x,y){
+        var box=canvas.getBoundingClientRect();
+        return {x:x-box.left,y:y-box.top};
+    }
+    canvas.onmousedown=function (e) {
+
+        e.preventDefault();
+        flag = true;
+        var point = canvasXY(e.clientX, e.clientY);
+        drawCanvas(flag, point);
+
+        canvas.onmousemove = function (e) {
+            e.preventDefault();
+            var point = canvasXY(e.clientX, e.clientY);
+            drawCanvas(flag, point);
+        }
+        canvas.onmouseup = function () {
+            e.preventDefault();
+            canvas.onmousemove = canvas.onmouseup = null;
+            flag = false;
+            drawCanvas(flag);
+        }
+    };
+    canvas.onmouseout=function (e){
+        e.preventDefault();
+        flag=false;
+        drawCanvas(flag);
+    }
+function drawCanvas(flag,point){
+    cxt.clearRect(0,0,canvas.width,canvas.height);
+    cxt.drawImage(image,0,0,canvas.width,canvas.height);
+        if(flag)
+        drawMagnifier(point);
+}
+    function drawMagnifier(point){
+         var CX= point.x*scale;
+         var CY= point.y*scale;
+        var mr=100;
+        var sx=CX-mr;
+        var sy=CY-mr;
+        var dx=point.x-mr;
+        var dy=point.y-mr;
+        cxt.save();
+        cxt.strokeStyle='blue';
+        cxt.lineWidth=10;
+        cxt.beginPath();
+        cxt.arc(point.x,point.y,mr,0,2*Math.PI);
+        cxt.stroke()
+        cxt.clip();
+        cxt.drawImage(offCanvas,sx,sy,2*mr,2*mr,dx,dy,2*mr,2*mr);
+        cxt.restore();
+    }
+
+</script>
+</html>
